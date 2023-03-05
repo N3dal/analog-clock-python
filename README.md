@@ -10,7 +10,7 @@ Simple try to make an analog clock using pyqt5.
 
 
 ## To-Do:
-[ ] - set the Numbers in right position.
+- [ ] set the Numbers in right position.
 
 
 
