@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.tick)
-        self.timer.start(0.5)
+        self.timer.start(250)
 
         self.draw_clock_frame()
         self.tick()
