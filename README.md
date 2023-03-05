@@ -4,6 +4,8 @@ Simple try to make an analog clock using pyqt5.
 
 ## Demo:
 
+![screenshot01](assets/screenshot_01.gif)
+
 
 
 
