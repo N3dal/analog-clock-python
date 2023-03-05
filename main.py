@@ -31,6 +31,8 @@ class MainWindow(QMainWindow):
     STYLESHEET = """
         background-color: #282828;
     """
+
+    CANVAS_BACKGROUND_COLOR = QColor(247, 247, 247, 255)
     CANVAS_STYLESHEET = """
         background-color: #f7f7f7;
     """
@@ -44,7 +46,7 @@ class MainWindow(QMainWindow):
         self.setStyleSheet(MainWindow.STYLESHEET)
 
         self.canvas = QPixmap(MainWindow.WIDTH - 20, MainWindow.HEIGHT - 100)
-        self.canvas.fill(QColor(247, 247, 247, 255))
+        self.canvas.fill(MainWindow.CANVAS_BACKGROUND_COLOR)
 
         self.label = QLabel(parent=self)
         self.label.setPixmap(self.canvas)
@@ -52,6 +54,9 @@ class MainWindow(QMainWindow):
         self.label.move(10, 10)
 
         self.draw_clock_frame()
+
+        for deg in range(361):
+            self.draw_line(deg)
 
     def draw_clock_frame(self):
         """
@@ -106,6 +111,49 @@ class MainWindow(QMainWindow):
                             5)
 
         painter.end()
+
+        return None
+
+    def draw_line(self, degree: int):
+        """
+            draw the line for clock wise.
+
+            return None;
+        """
+
+        # Convert the degree into radians;
+        degree *= (pi / 180)
+
+        WISE_LENGTH = 25
+
+        circle_center_x = self.canvas.width() // 2
+        circle_center_y = self.canvas.height() // 2
+
+        pen = QPen()
+        pen.setWidth(4)
+        painter = QPainter(self.label.pixmap())
+        painter.setPen(pen)
+
+        # debug;
+        x2 = int(WISE_LENGTH * cos(degree))
+        y2 = int(WISE_LENGTH * sin(degree))
+        print(f"{x2=}, {y2=}")
+
+        painter.drawLine(circle_center_x + 3, circle_center_y + 3,
+                         x2, y2)
+
+        painter.end()
+
+        return None
+
+    def clear(self):
+        """
+            clear the canvas and fill it with the basic color;
+
+            return None;
+        """
+
+        self.label.pixmap().fill(MainWindow.CANVAS_BACKGROUND_COLOR)
 
         return None
 
