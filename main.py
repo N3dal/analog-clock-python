@@ -20,6 +20,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+from random import randint
+
 
 class MainWindow(QMainWindow):
     """
@@ -53,10 +55,16 @@ class MainWindow(QMainWindow):
         self.label.setFixedSize(MainWindow.WIDTH, 400)
         self.label.move(10, 10)
 
-        self.draw_clock_frame()
+        self.__seconds_degree = 0
+        self.__minutes_degree = 0
+        self.__hours_degree = 0
 
-        for deg in range(361):
-            self.draw_line(deg)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.tick)
+        self.timer.start(0.5)
+
+        self.draw_clock_frame()
+        self.tick()
 
     def draw_clock_frame(self):
         """
@@ -114,7 +122,7 @@ class MainWindow(QMainWindow):
 
         return None
 
-    def draw_line(self, degree: int):
+    def draw_line(self, degree: int, shifting: int = 0):
         """
             draw the line for clock wise.
 
@@ -124,7 +132,7 @@ class MainWindow(QMainWindow):
         # Convert the degree into radians;
         degree *= (pi / 180)
 
-        WISE_LENGTH = 25
+        WISE_LENGTH = 150
 
         circle_center_x = self.canvas.width() // 2
         circle_center_y = self.canvas.height() // 2
@@ -135,18 +143,18 @@ class MainWindow(QMainWindow):
         painter.setPen(pen)
 
         # debug;
-        x2 = int(WISE_LENGTH * cos(degree))
-        y2 = int(WISE_LENGTH * sin(degree))
+        x2 = circle_center_x - int(WISE_LENGTH * cos(degree)) + shifting
+        y2 = circle_center_y - int(WISE_LENGTH * sin(degree)) + shifting
         print(f"{x2=}, {y2=}")
 
-        painter.drawLine(circle_center_x + 3, circle_center_y + 3,
-                         x2, y2)
+        painter.drawLine(x2, y2, circle_center_x +
+                         3, circle_center_y + 3)
 
         painter.end()
 
         return None
 
-    def clear(self):
+    def clear_canvas(self):
         """
             clear the canvas and fill it with the basic color;
 
@@ -155,6 +163,38 @@ class MainWindow(QMainWindow):
 
         self.label.pixmap().fill(MainWindow.CANVAS_BACKGROUND_COLOR)
 
+        return None
+
+    def tick(self):
+        """
+            timeout event when the timer get 1 second;
+
+            return None;
+        """
+        print("Tick!!")
+
+        # in every tick we need to clear the main canvas;
+        self.clear_canvas()
+
+        # then we need to re-draw the main clock frame;
+        self.draw_clock_frame()
+
+        self.draw_line(self.__seconds_degree, shifting=10)
+        self.draw_line(self.__minutes_degree, shifting=5)
+        self.draw_line(self.__hours_degree, shifting=30)
+
+        self.__seconds_degree += 6
+
+        if self.__seconds_degree > 360:
+            self.__seconds_degree = 0
+            self.__minutes_degree += 6
+
+        if self.__minutes_degree > 360:
+            self.__minutes_degree = 0
+            self.__hours_degree += 30
+
+        # update the main window so the changes will appear;
+        self.update()
         return None
 
 
