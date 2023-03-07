@@ -20,7 +20,26 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from random import randint
+
+class CustomLabel(QLabel):
+    """
+        custom label;
+    """
+
+    class Signals(QOjbect):
+        """
+            Docstring;
+        """
+
+        double_click = pyqtSignal()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.signals = CustomLabel.Signals()
+
+    def mouseDoubleClickEvent(self, e):
+
+        self.signals.double_click.emit()
 
 
 class MainWindow(QMainWindow):
@@ -33,12 +52,18 @@ class MainWindow(QMainWindow):
     STYLESHEET = """
         background-color: #282828;
     """
+    TITLE = "Analog Clock"
+
+    OPACITY = 0.98
 
     CANVAS_BACKGROUND_COLOR = QColor(247, 247, 247, 255)
-    CANVAS_STYLESHEET = """
-        background-color: #f7f7f7;
+    LABEL_STYLESHEET = """
+        background-color: #9e91e8;
+        border-radius: 10px;
     """
-    TITLE = "Analog Clock"
+
+    # the frame circle radius
+    RADIUS = 300
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -46,22 +71,26 @@ class MainWindow(QMainWindow):
         self.setFixedSize(MainWindow.WIDTH, MainWindow.HEIGHT)
         self.setWindowTitle(MainWindow.TITLE)
         self.setStyleSheet(MainWindow.STYLESHEET)
+        self.setWindowOpacity(MainWindow.OPACITY)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.canvas = QPixmap(MainWindow.WIDTH - 20, MainWindow.HEIGHT - 100)
         self.canvas.fill(MainWindow.CANVAS_BACKGROUND_COLOR)
 
-        self.label = QLabel(parent=self)
+        self.label = CustomLabel(parent=self)
         self.label.setPixmap(self.canvas)
-        self.label.setFixedSize(MainWindow.WIDTH, 400)
+        self.label.setFixedSize(MainWindow.WIDTH, MainWindow.HEIGHT - 50)
+        self.label.setStyleSheet(MainWindow.LABEL_STYLESHEET)
         self.label.move(10, 10)
 
-        self.__seconds_degree = 0
-        self.__minutes_degree = 0
-        self.__hours_degree = 0
+        self.__seconds_angle = 0
+        self.__minutes_angle = 0
+        self.__hours_angle = 0
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.tick)
-        self.timer.start(250)
+        self.timer.start(1000)
 
         self.draw_clock_frame()
         self.tick()
@@ -74,19 +103,16 @@ class MainWindow(QMainWindow):
             return None;
         """
 
-        # the frame circle radius
-        RADIUS = 300
-
         # the numbers circle radius;
-        NUMBER_RADIUS = RADIUS - 30
+        NUMBER_RADIUS = MainWindow.RADIUS - 30
 
         # first draw the frame;
         pen = QPen()
         pen.setWidth(4)
         painter = QPainter(self.label.pixmap())
         painter.setPen(pen)
-        painter.drawEllipse((self.canvas.width() - RADIUS) // 2,
-                            (self.canvas.height() - RADIUS) // 2, RADIUS, RADIUS)
+        painter.drawEllipse((self.canvas.width() - MainWindow.RADIUS) // 2,
+                            (self.canvas.height() - MainWindow.RADIUS) // 2, MainWindow.RADIUS, MainWindow.RADIUS)
 
         # second draw the numbers;
         font = QFont()
@@ -94,7 +120,7 @@ class MainWindow(QMainWindow):
         font.setPointSize(20)
         painter.setFont(font)
 
-        deg = 0
+        angle = 0
         hour = 3
 
         for _ in range(12):
@@ -103,9 +129,11 @@ class MainWindow(QMainWindow):
             if hour > 12:
                 hour = 1
 
-            painter.drawText(int(NUMBER_RADIUS//2 * cos(deg * pi / 180)) + (NUMBER_RADIUS + 75) // 2,
-                             int(NUMBER_RADIUS//2 * sin(deg * pi / 180)) + (NUMBER_RADIUS + 100) // 2, f"{hour}")
-            deg += 30
+            painter.drawText(int(NUMBER_RADIUS//2 * cos(angle * pi / 180)) + (NUMBER_RADIUS + 75) // 2,
+                             int(NUMBER_RADIUS//2 * sin(angle * pi / 180)
+                                 ) + (NUMBER_RADIUS + 100) // 2,
+                             f"{hour}")
+            angle += 30
             hour += 1
 
         # first draw the frame;
@@ -113,8 +141,9 @@ class MainWindow(QMainWindow):
         center_pen.setWidth(8)
         center_pen.setColor(Qt.red)
         painter.setPen(center_pen)
-        painter.drawEllipse((self.canvas.width() - RADIUS) // 2 + RADIUS//2,
-                            (self.canvas.height() - RADIUS) // 2 + RADIUS//2,
+        painter.drawEllipse((self.canvas.width() - MainWindow.RADIUS) // 2 + MainWindow.RADIUS//2,
+                            (self.canvas.height() - MainWindow.RADIUS) // 2 +
+                            MainWindow.RADIUS//2,
                             5,
                             5)
 
@@ -122,9 +151,9 @@ class MainWindow(QMainWindow):
 
         return None
 
-    def draw_line(self, degree: int, shifting: int = 0):
+    def draw_clock_hand(self, degree: int, hand_length: int = 0):
         """
-            draw the line for clock wise.
+            draw the line for clock hands.
 
             return None;
         """
@@ -132,7 +161,9 @@ class MainWindow(QMainWindow):
         # Convert the degree into radians;
         degree *= (pi / 180)
 
-        WISE_LENGTH = 150
+        MAX_HAND_LENGTH = 150
+
+        hand_length %= MAX_HAND_LENGTH
 
         circle_center_x = self.canvas.width() // 2
         circle_center_y = self.canvas.height() // 2
@@ -142,13 +173,15 @@ class MainWindow(QMainWindow):
         painter = QPainter(self.label.pixmap())
         painter.setPen(pen)
 
-        # debug;
-        x2 = circle_center_x - int(WISE_LENGTH * cos(degree)) + shifting
-        y2 = circle_center_y - int(WISE_LENGTH * sin(degree)) + shifting
-        print(f"{x2=}, {y2=}")
+        x1 = circle_center_x + 3
+        y1 = circle_center_y + 3
+        x2 = circle_center_x - int(hand_length * cos(degree))
+        y2 = circle_center_y - int(hand_length * sin(degree))
 
-        painter.drawLine(x2, y2, circle_center_x +
-                         3, circle_center_y + 3)
+        # debug;
+        # print(f"{x2=}, {y2=}")
+
+        painter.drawLine(x1, y1, x2, y2)
 
         painter.end()
 
@@ -171,7 +204,6 @@ class MainWindow(QMainWindow):
 
             return None;
         """
-        print("Tick!!")
 
         # in every tick we need to clear the main canvas;
         self.clear_canvas()
@@ -179,19 +211,19 @@ class MainWindow(QMainWindow):
         # then we need to re-draw the main clock frame;
         self.draw_clock_frame()
 
-        self.draw_line(self.__seconds_degree, shifting=10)
-        self.draw_line(self.__minutes_degree, shifting=5)
-        self.draw_line(self.__hours_degree, shifting=30)
+        self.draw_clock_hand(self.__seconds_angle, hand_length=135)
+        self.draw_clock_hand(self.__minutes_angle, hand_length=110)
+        self.draw_clock_hand(self.__hours_angle, hand_length=80)
 
-        self.__seconds_degree += 6
+        self.__seconds_angle += 6
 
-        if self.__seconds_degree > 360:
-            self.__seconds_degree = 0
-            self.__minutes_degree += 6
+        if self.__seconds_angle > 360:
+            self.__seconds_angle = 0
+            self.__minutes_angle += 6
 
-        if self.__minutes_degree > 360:
-            self.__minutes_degree = 0
-            self.__hours_degree += 30
+        if self.__minutes_angle > 360:
+            self.__minutes_angle = 0
+            self.__hours_angle += 30
 
         # update the main window so the changes will appear;
         self.update()
