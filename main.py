@@ -26,7 +26,7 @@ class CustomLabel(QLabel):
         custom label;
     """
 
-    class Signals(QOjbect):
+    class Signals(QObject):
         """
             Docstring;
         """
@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
         self.setStyleSheet(MainWindow.STYLESHEET)
         self.setWindowOpacity(MainWindow.OPACITY)
         self.setWindowFlags(Qt.FramelessWindowHint)
-        # self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.canvas = QPixmap(MainWindow.WIDTH - 20, MainWindow.HEIGHT - 100)
         self.canvas.fill(MainWindow.CANVAS_BACKGROUND_COLOR)
@@ -82,7 +82,8 @@ class MainWindow(QMainWindow):
         self.label.setPixmap(self.canvas)
         self.label.setFixedSize(MainWindow.WIDTH, MainWindow.HEIGHT - 50)
         self.label.setStyleSheet(MainWindow.LABEL_STYLESHEET)
-        self.label.move(10, 10)
+        self.label.signals.double_click.connect(self.mouse_double_click_event)
+        self.label.move(0, 10)
 
         self.__seconds_angle = 0
         self.__minutes_angle = 0
@@ -227,6 +228,17 @@ class MainWindow(QMainWindow):
 
         # update the main window so the changes will appear;
         self.update()
+        return None
+
+    def mouse_double_click_event(self):
+        """
+            close the program;
+
+            return None;
+        """
+
+        sys.exit(0)
+
         return None
 
 
