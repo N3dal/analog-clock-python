@@ -15,7 +15,7 @@ Built using ![python](https://img.shields.io/badge/python-3-brightgreen) and ![p
 
 
 ## To-Do:
-- [ ] let the user change the framr color.
+- [ ] let the user change the frame color.
 - [ ] let the user edit the time.
 
 
