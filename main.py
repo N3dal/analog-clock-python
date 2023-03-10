@@ -21,27 +21,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 
-class CustomLabel(QLabel):
-    """
-        custom label;
-    """
-
-    class Signals(QObject):
-        """
-            Docstring;
-        """
-
-        double_click = pyqtSignal()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.signals = CustomLabel.Signals()
-
-    def mouseDoubleClickEvent(self, e):
-
-        self.signals.double_click.emit()
-
-
 class MainWindow(QMainWindow):
     """
         application main window;
@@ -62,6 +41,15 @@ class MainWindow(QMainWindow):
         border-radius: 10px;
     """
 
+    CONTEXT_MENU_STYLESHEET = """
+
+        QMenu{
+            background-color: #282828;
+            border-radius: 5px;
+        }
+
+    """
+
     # the frame circle radius
     RADIUS = 300
 
@@ -78,11 +66,11 @@ class MainWindow(QMainWindow):
         self.canvas = QPixmap(MainWindow.WIDTH - 20, MainWindow.HEIGHT - 100)
         self.canvas.fill(MainWindow.CANVAS_BACKGROUND_COLOR)
 
-        self.label = CustomLabel(parent=self)
+        self.label = QLabel(parent=self)
         self.label.setPixmap(self.canvas)
         self.label.setFixedSize(MainWindow.WIDTH, MainWindow.HEIGHT - 50)
         self.label.setStyleSheet(MainWindow.LABEL_STYLESHEET)
-        self.label.signals.double_click.connect(self.mouse_double_click_event)
+
         self.label.move(0, 10)
 
         self.__seconds_angle = 0
@@ -148,6 +136,26 @@ class MainWindow(QMainWindow):
                             5)
 
         painter.end()
+
+    def contextMenuEvent(self, e):
+        """
+            context menu event;
+
+            return None;
+        """
+        # first create menu;
+        menu = QMenu(self)
+
+        menu.setStyleSheet(MainWindow.CONTEXT_MENU_STYLESHEET)
+        menu.setCursor(QCursor(Qt.PointingHandCursor))
+
+        edit_action = menu.addAction("Edit")
+        quit_action = menu.addAction("Quit")
+
+        action = menu.exec(self.mapToGlobal(e.pos()))
+
+        if action == quit_action:
+            sys.exit(0)
 
     def draw_clock_hand(self, degree: int, hand_length: int = 0):
         """
@@ -223,15 +231,6 @@ class MainWindow(QMainWindow):
         # update the main window so the changes will appear;
         self.update()
         return None
-
-    def mouse_double_click_event(self):
-        """
-            close the program;
-
-            return None;
-        """
-
-        sys.exit(0)
 
 
 def main():
