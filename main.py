@@ -91,19 +91,18 @@ class MainWindow(QMainWindow):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.tick)
-        self.timer.start(1000)
+        self.timer.start(1)
 
-        self.draw_clock_frame()
+        # self.draw_clock_frame()
         self.tick()
 
-    def draw_clock_frame(self):
+    def paintEvent(self, e):
         """
             draw the circle frame and the numbers;
             and draw the center dot of the clock;
 
             return None;
         """
-
         # the numbers circle radius;
         NUMBER_RADIUS = MainWindow.RADIUS - 30
 
@@ -149,8 +148,6 @@ class MainWindow(QMainWindow):
                             5)
 
         painter.end()
-
-        return None
 
     def draw_clock_hand(self, degree: int, hand_length: int = 0):
         """
@@ -209,9 +206,6 @@ class MainWindow(QMainWindow):
         # in every tick we need to clear the main canvas;
         self.clear_canvas()
 
-        # then we need to re-draw the main clock frame;
-        self.draw_clock_frame()
-
         self.draw_clock_hand(self.__seconds_angle, hand_length=135)
         self.draw_clock_hand(self.__minutes_angle, hand_length=110)
         self.draw_clock_hand(self.__hours_angle, hand_length=80)
@@ -238,8 +232,6 @@ class MainWindow(QMainWindow):
         """
 
         sys.exit(0)
-
-        return None
 
 
 def main():
