@@ -80,6 +80,8 @@ class MainWindow(QMainWindow):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.tick)
+
+        # the sound take 20 to 50 ms;
         self.timer.start(970)
 
         # self.draw_clock_frame()
