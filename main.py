@@ -84,7 +84,6 @@ class MainWindow(QMainWindow):
         # the sound take 20 to 50 ms;
         self.timer.start(970)
 
-        # self.draw_clock_frame()
         self.tick()
 
     def paintEvent(self, e):
