@@ -16,6 +16,7 @@
 from os import system
 from math import (sin, cos, pi)
 import sys
+from playsound import playsound
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -79,7 +80,7 @@ class MainWindow(QMainWindow):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.tick)
-        self.timer.start(1)
+        self.timer.start(970)
 
         # self.draw_clock_frame()
         self.tick()
@@ -230,6 +231,10 @@ class MainWindow(QMainWindow):
 
         # update the main window so the changes will appear;
         self.update()
+
+        # now play the sound;
+        playsound(r"./assets/tick.mp3")
+
         return None
 
 
